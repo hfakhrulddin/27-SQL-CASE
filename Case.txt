@@ -1,0 +1,80 @@
+-------------------------------------------------------------------------
+CASE
+-----------------------------------------------------------------------------
+SELECT   ProductNumber, Category =
+      CASE ProductLine
+         WHEN 'R' THEN 'Road'
+         WHEN 'M' THEN 'Mountain'
+         WHEN 'T' THEN 'Touring'
+         WHEN 'S' THEN 'Other sale items'
+         ELSE 'Not for sale'
+      END,
+   Name
+FROM Product
+ORDER BY ProductNumber;
+
+---------------------------------------------------------------------------
+CASE & SOME Logic
+-----------------------------------------------------------------------------
+SELECT   ProductNumber, Name, 'Price Range' = 
+      CASE 
+         WHEN ListPrice =  0 THEN 'Mfg item - not for resale'
+         WHEN ListPrice < 50 THEN 'Under $50'
+         WHEN ListPrice >= 50 and ListPrice < 250 THEN 'Under $250'
+         WHEN ListPrice >= 250 and ListPrice < 1000 THEN 'Under $1000'
+         ELSE 'Over $1000'
+      END
+FROM Production.Product
+ORDER BY ProductNumber ;
+
+-----------------------------------------------------------------------------
+CASE AS AN IF
+-------------------------------------------------------------------------------
+SELECT FirstName, LastName, TelephoneNumber, 'When to Contact' = 
+     CASE
+          WHEN TelephoneSpecialInstructions IS NULL THEN 'Any time'
+          ELSE TelephoneSpecialInstructions
+     END
+FROM Person.vAdditionalContactInfo;
+
+---------------------------------------------------------------------------------------------
+Using CASE in an ORDER BY clause
+------------------------------------------------------------------------------------------------
+
+SELECT BusinessEntityID, LastName, TerritoryName, CountryRegionName
+FROM Sales.vSalesPerson
+WHERE TerritoryName IS NOT NULL
+ORDER BY CASE CountryRegionName WHEN 'United States' THEN TerritoryName
+         ELSE CountryRegionName END;
+
+--------------------------------------------------------------------------
+Using CASE in a HAVING
+-------------------------------------------------------------------------
+SELECT JobTitle, MAX(ph1.Rate)AS MaximumRate
+FROM HumanResources.Employee AS e
+JOIN HumanResources.EmployeePayHistory AS ph1 ON e.BusinessEntityID = ph1.BusinessEntityID
+GROUP BY JobTitle
+HAVING (MAX(CASE WHEN Gender = 'M' 
+        THEN ph1.Rate 
+        ELSE NULL END) > 40.00
+     OR MAX(CASE WHEN Gender  = 'F' 
+        THEN ph1.Rate  
+        ELSE NULL END) > 42.00)
+ORDER BY MaximumRate DESC;
+
+---------------------------------------------------------------------------------------------------
+Using CASE in an UPDATE statement
+------------------------------------------
+UPDATE HumanResources.Employee
+SET VacationHours = 
+    ( CASE
+         WHEN ((VacationHours - 10.00) < 0) THEN VacationHours + 40
+         ELSE (VacationHours + 20.00)
+       END
+    )
+WHERE SalariedFlag = 0; 
+
+
+
+
+
